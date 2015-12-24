@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Accord.MachineLearning.Structures;
 using EliteTrader.Entities;
+using EliteTrader.Loaders;
 using System = EliteTrader.Entities.System;
 
 namespace EliteTrader

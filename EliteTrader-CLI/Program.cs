@@ -2,17 +2,23 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using EliteTrader;
 
 namespace EliteTrader_CLI
 {
-    class Program
+    public class Program
     {
         const string _commandNamespace = "EliteTrader_CLI.Commands";
         static Dictionary<string, Dictionary<string, IEnumerable<ParameterInfo>>> _commandLibraries;
 
+        public static EliteTraderApplication TraderApplication { get; set; }
+
         static void Main(string[] args)
         {
             Console.Title = typeof (Program).Name;
+
+            TraderApplication = new EliteTraderApplication("Data\\Stations.csv", "Data\\Systems.csv");
+            TraderApplication.Messaged += _traderApplication_Messaged;
 
             // Any static classes containing commands for use from the 
             // console are located in the Commands namespace. Load 
@@ -21,12 +27,13 @@ namespace EliteTrader_CLI
                 IEnumerable<ParameterInfo>>>();
 
             // Use reflection to load all of the classes in the Commands namespace:
-            var q = from t in Assembly.GetExecutingAssembly().GetTypes()
+            IEnumerable<Type> q = from t in Assembly.GetExecutingAssembly().GetTypes()
                 where t.IsClass && t.Namespace == _commandNamespace
                 select t;
-            var commandClasses = q.ToList();
 
-            foreach (var commandClass in commandClasses)
+            List<Type> commandClasses = q.ToList();
+
+            foreach (Type commandClass in commandClasses)
             {
                 // Load the method info from each class into a dictionary:
                 var methods = commandClass.GetMethods(BindingFlags.Static | BindingFlags.Public);
@@ -42,6 +49,10 @@ namespace EliteTrader_CLI
             Run();
         }
 
+        private static void _traderApplication_Messaged(object sender, EliteTraderEventArgs e)
+        {
+            WriteToConsole(e.Message);
+        }
 
         static void Run()
         {
@@ -375,7 +386,7 @@ namespace EliteTrader_CLI
         }
 
 
-        const string _readPrompt = "EliteTrader> ";
+        const string _readPrompt = "EliteTraderApplication> ";
 
         public static string ReadFromConsole(string promptMessage = "")
         {

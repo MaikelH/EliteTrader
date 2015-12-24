@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EliteTrader", "EliteTrader\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EliteTrader-CLI", "EliteTrader-CLI\EliteTrader-CLI.csproj", "{18ED4FD2-F50E-474A-A0C3-CED2C4353D7E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EliteTrader.test", "EliteTrader.test\EliteTrader.test.csproj", "{6AF381DC-8A88-44CA-8103-BE7411BC5966}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{18ED4FD2-F50E-474A-A0C3-CED2C4353D7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{18ED4FD2-F50E-474A-A0C3-CED2C4353D7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{18ED4FD2-F50E-474A-A0C3-CED2C4353D7E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6AF381DC-8A88-44CA-8103-BE7411BC5966}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6AF381DC-8A88-44CA-8103-BE7411BC5966}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6AF381DC-8A88-44CA-8103-BE7411BC5966}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6AF381DC-8A88-44CA-8103-BE7411BC5966}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
