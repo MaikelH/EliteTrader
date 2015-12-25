@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using EliteTrader;
+using EliteTrader.Exception;
 
 namespace EliteTrader_CLI.Commands
 {

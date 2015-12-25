@@ -34,7 +34,7 @@ namespace EliteTrader.Loaders
         private void addStationToDictionary(Dictionary<string, List<Station>> stations, string[] x)
         {
             Station station = new Station(x[0], 
-                x[1], 
+                x[1].ToUpper(), 
                 Convert.ToInt32(x[2]), 
                 convertToBoolean(x[3]), 
                 x[4],

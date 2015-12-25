@@ -10,23 +10,18 @@ namespace EliteTrader
 {
     public sealed class EliteTraderApplication
     {
-        private readonly string _stationsFile;
-        private readonly string _systemsFile;
         private readonly Dictionary<string, Entities.System> _systems;
         private readonly Dictionary<string, List<Station>> _stations;
 
-        private KDTree<Entities.System> _tree;
+        private readonly KDTree<Entities.System> _tree;
 
         public delegate void MessageEventHandler(object sender, EliteTraderEventArgs e);
 
         public EliteTraderApplication(string stationsFile, string systemsFile)
         {
-            _stationsFile = stationsFile;
-            _systemsFile = systemsFile;
+            _systems = loadSystems(systemsFile);
 
-            _systems = loadSystems(_systemsFile);
-
-            _stations = loadStations(_stationsFile);
+            _stations = loadStations(stationsFile);
 
             // Initialize kdtree with all known systems.
             Double[][] coords =_systems.Select(x => new[] { x.Value.Location.X, x.Value.Location.Y, x.Value.Location.Z })
@@ -155,19 +150,25 @@ namespace EliteTrader
         {
             string[] splitted = to.Split('/');
 
-            IEnumerable<Entities.System> matchingSystems = Systems.Where(x => x.Key.Contains(splitted[0]))
-                                                                    .Where(x => Stations[x.Key].Where(y => y.StationName.Contains(splitted[1])).Count() > 0)
-                                                                    .Select(x => x.Value);
-            if (matchingSystems.Count() > 0)
+            IEnumerable<Station> matchingSystems = Systems.Where(x => x.Key.Contains(splitted[0].ToUpper()))
+                                         .Select(x => x.Value)
+                                         .Select(x => _stations.TryGetValue(x.Name))
+                                         .SelectMany(list => list.ToEnumerable())
+                                         .SelectMany(list => list)
+                                         .Where(x => x.StationName.Contains(splitted[1].ToUpper()));
+
+            IEnumerable<Station> enumerable = matchingSystems as IList<Station> ?? matchingSystems.ToList();
+
+            if (enumerable.Count() > 1)
             {
                 throw new MultipleSystemException("Found multiple systems for input: " + to);
             }
-            if (matchingSystems.Count() == 0)
+            if (!enumerable.Any())
             {
                 throw new NoSystemsFoundException("No systems found for input: " + to);
             }
 
-            return matchingSystems.First();
+            return _systems[enumerable.First().Systemname];
         }
     }
 }
