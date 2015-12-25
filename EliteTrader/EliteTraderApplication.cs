@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Accord.MachineLearning.Structures;
 using EliteTrader.Entities;
+using EliteTrader.Exception;
 using EliteTrader.Loaders;
-using System = EliteTrader.Entities.System;
 
 namespace EliteTrader
 {
@@ -13,6 +14,8 @@ namespace EliteTrader
         private readonly string _systemsFile;
         private readonly Dictionary<string, Entities.System> _systems;
         private readonly Dictionary<string, List<Station>> _stations;
+
+        private KDTree<Entities.System> _tree;
 
         public delegate void MessageEventHandler(object sender, EliteTraderEventArgs e);
 
@@ -24,6 +27,11 @@ namespace EliteTrader
             _systems = loadSystems(_systemsFile);
 
             _stations = loadStations(_stationsFile);
+
+            // Initialize kdtree with all known systems.
+            Double[][] coords =_systems.Select(x => new[] { x.Value.Location.X, x.Value.Location.Y, x.Value.Location.Z })
+                                       .ToArray();
+            _tree = KDTree.FromData(coords, _systems.Values.ToArray());
         }
 
         public void OnMessage(EliteTraderEventArgs e)
@@ -49,7 +57,8 @@ namespace EliteTrader
         /// system. The system and station should be separated by a forward slash.
         /// 
         /// Example input:
-        /// era     -> Eravate
+        /// erav    -> Eravate
+        /// 
         /// era/ack -> Eravate
         /// 
         /// </summary>
@@ -66,6 +75,37 @@ namespace EliteTrader
 
             return ResolveSystemName(to);
         }
+
+        /// <summary>
+        /// Find the shortest route between two systems. Will use the global jump distance set in the EliteTrader 
+        /// application.
+        /// 
+        /// 
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <returns>Ordered list of systems. First system in the list is the start system.</returns>
+        public List<Entities.System> FindShortestRoute(Entities.System start, Entities.System end)
+        {
+            return new List<Entities.System>();
+        }
+
+        /// <summary>
+        /// Find all the system closest to a system.
+        /// </summary>
+        /// <param name="system"></param>
+        /// <param name="distance">Radius to search in</param>
+        /// <returns>List of systems.</returns>
+        public Dictionary<Entities.System, double> FindClosestSystems(Entities.System system, double distance)
+        {
+            KDTreeNodeList<Entities.System> closest = _tree.Nearest(new double[] {system.Location.X, system.Location.Y, system.Location.Z}, distance);
+
+            closest.Sort((nodeDistance, treeNodeDistance) => nodeDistance.Distance.CompareTo(treeNodeDistance.Distance));
+
+            return closest.Select(x => new KeyValuePair<Entities.System, double>(x.Node.Value, x.Distance))
+                          .Where(x => x.Key.Name != system.Name)  
+                          .ToDictionary(pair => pair.Key, pair => pair.Value);
+        } 
 
         #region properties
 
@@ -100,7 +140,7 @@ namespace EliteTrader
 
             if (matchingSystems.Count() > 1)
             {
-                throw new MultipleSystemException("Found multiple systems for" + to);
+                throw new MultipleSystemException("Found multiple systems for " + to);
             }
 
             return matchingSystems.First();
@@ -120,7 +160,11 @@ namespace EliteTrader
                                                                     .Select(x => x.Value);
             if (matchingSystems.Count() > 0)
             {
-                throw new MultipleSystemException("Found multiple systems for" + to);
+                throw new MultipleSystemException("Found multiple systems for input: " + to);
+            }
+            if (matchingSystems.Count() == 0)
+            {
+                throw new NoSystemsFoundException("No systems found for input: " + to);
             }
 
             return matchingSystems.First();

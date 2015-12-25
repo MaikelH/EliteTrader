@@ -1,4 +1,5 @@
 ﻿using System;
+using EliteTrader.Exception;
 using NUnit.Framework;
 
 namespace EliteTrader.test
